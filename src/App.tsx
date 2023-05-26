@@ -6,6 +6,7 @@ import { AiFillEdit } from 'react-icons/ai'
 function App() {
   const [csvData, setCsvData] = useState<any[]>([]);
   const [header, setHeader] = useState<string[]>([]);
+  const [editedData, setEditedData] = useState<any[]>([]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -16,10 +17,27 @@ function App() {
         const csvText = reader.result as string;
         Papa.parse(csvText, {
           complete: (results) => {
+            const switchStateArray = Array.from(
+              { length: results.data.length - 1 },
+              () => false
+            );
             setHeader(results.data[0] as string[]);
             setCsvData(
-              results.data
+              results.data.slice(1).map((row: any, rowIndex: number) => {
+                if (row.includes("comment")) {
+                  return [...row, switchStateArray[rowIndex]];
+                } else {
+                  return row;
+                }
+              })
             );
+            setEditedData(results.data.slice(1).map((row: any, rowIndex: number) => {
+              if (row.includes("comment")) {
+                return [...row, switchStateArray[rowIndex]];
+              } else {
+                return row;
+              }
+            }));
           },
         });
       };
@@ -65,9 +83,9 @@ function App() {
         }
         <table className='frame-table'>
           <tbody className='tbody'>
-            {Array.isArray(csvData) && csvData.length > 1
+            {Array.isArray(editedData) && editedData.length > 1
               &&
-              csvData.map((row: any[], rowIndex: any) => (
+              editedData.map((row: any[], rowIndex: any) => (
                 <tr key={rowIndex} className='item-content-row'
                   style={{
                     gridTemplateColumns: `repeat(${header.length}, minmax(0, 1fr))`,
@@ -93,7 +111,7 @@ function App() {
                                 backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
                               }}
                               type="text"
-                              value={''}
+                              value={editedData[rowIndex][cellIndex]}
 
                             />
                             <button className='button-edit-field' >

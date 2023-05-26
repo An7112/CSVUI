@@ -98,6 +98,28 @@ function App() {
     setEditedData(updatedData);
     setModalVisible(false);
   };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const textarea = event.target as HTMLTextAreaElement;
+      const { selectionStart, value } = textarea;
+      const lines = value.split('\n');
+      const currentLineIndex = lines.findIndex((line) => selectionStart! >= line.length);
+      const currentLine: any = lines[currentLineIndex] ?? '';
+      const indentation = currentLine.match(/^\s*/)[0];
+      const newLine = indentation + value.slice(selectionStart!);
+      const newValue = value.slice(0, selectionStart!) + '\n' + newLine;
+      setModalInputValue(newValue);
+
+      setTimeout(() => {
+        textarea.selectionStart = selectionStart! + indentation.length + 1;
+        textarea.selectionEnd = selectionStart! + indentation.length + 1;
+        textarea.focus();
+      }, 0);
+    }
+  };
+
   return (
     <div className="container">
       <div className="main">
@@ -209,6 +231,7 @@ function App() {
           value={modalInputValue}
           onChange={(event) => setModalInputValue(event.target.value)}
           rows={20}
+          onKeyDown={handleKeyDown}
         />
       </Modal>
     </div>

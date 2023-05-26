@@ -133,6 +133,38 @@ function App() {
     );
   };
 
+  const handleExpottCSV = () => {
+    const filteredData = editedData.map((row) =>
+      row.map((value: any, index: number) =>
+        selectedColumns.includes(header[index]) && value !== "" ? value : null
+      )
+    );
+
+    const selectedHeader = header.filter((column: any) =>
+      selectedColumns.includes(column)
+    );
+    const selectedData = filteredData.filter((row) =>
+      row.some((cell: any) => cell !== "")
+    );
+    const newData = [selectedHeader, ...selectedData];
+    const removeHeader = newData.slice(1);
+    removeHeader.unshift(header)
+    const csvString = Papa.unparse(removeHeader, { quotes: true });
+
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "edited.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
     <div className="container">
       <div className="main">
@@ -140,6 +172,7 @@ function App() {
           <div className='frame-input-file'>
             <input className='open-file' id='select-file' type="file" accept=".csv" onChange={handleFileUpload} />
           </div>
+          <button className='button' onClick={handleExpottCSV}>Export CSV</button>
         </div>
         {Array.isArray(selectedColumns) && selectedColumns.length > 0 &&
           <div className='frame-header-row' style={{ gridTemplateColumns: `repeat(${selectedColumns.length}, minmax(0, 1fr))` }}>

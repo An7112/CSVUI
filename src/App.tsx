@@ -7,6 +7,7 @@ function App() {
   const [csvData, setCsvData] = useState<any[]>([]);
   const [header, setHeader] = useState<string[]>([]);
   const [editedData, setEditedData] = useState<any[]>([]);
+  const [switchState, setSwitchState] = useState<boolean[]>([]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -42,6 +43,24 @@ function App() {
         });
       };
       reader.readAsText(file);
+    }
+  };
+
+  const handleSwitchChange = (rowIndex: number) => {
+    const updatedSwitchState = [...switchState];
+    updatedSwitchState[rowIndex] = !updatedSwitchState[rowIndex];
+    setSwitchState(updatedSwitchState);
+
+    const updatedEditedData = [...editedData];
+    const commentIndex = updatedEditedData[rowIndex].findIndex((cell: any) => cell.includes("comment")) + 1;
+    if (commentIndex !== -1) {
+      const comment = updatedEditedData[rowIndex][commentIndex];
+      if (updatedSwitchState[rowIndex]) {
+        updatedEditedData[rowIndex][commentIndex] = `${comment} [ADD]`;
+      } else {
+        updatedEditedData[rowIndex][commentIndex] = comment.replace(" [ADD]", "");
+      }
+      setEditedData(updatedEditedData);
     }
   };
 
@@ -92,33 +111,47 @@ function App() {
                     gridTemplateRows: `repeat(2, 1fr)`,
                     gap: '1rem'
                   }}>
-                  {Array.isArray(row) && row.length > 0
-                    &&
+                  {
                     row.map((cell: any, cellIndex: any) => {
-                      return (
-                        cellIndex === 0
-                          ? <div className='title'
-                            style={{
-                              gridRow: '1',
-                              gridColumn: `span ${header.length} / span ${header.length}`
-                            }}>{cell}</div>
-                          : <td style={{
-                            gridRow: '2',
-                            backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
-                          }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
-                            <input
+                      if (cellIndex === row.length - 1 && row.includes('comment')) {
+                        return (
+                          cellIndex === 0
+                            ? <div className='title'
                               style={{
-                                backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
-                              }}
-                              type="text"
-                              value={editedData[rowIndex][cellIndex]}
-
-                            />
-                            <button className='button-edit-field' >
-                              <AiFillEdit />
-                            </button>
-                          </td>
-                      );
+                                gridRow: '1',
+                                gridColumn: `span ${header.length} / span ${header.length}`
+                              }}>{cell}</div>
+                            : <td style={{ gridRow: '2' }} key={`${rowIndex}-${cellIndex}`} className='item-content input'>
+                              <input
+                                type="checkbox" checked={switchState[rowIndex]} onChange={() => handleSwitchChange(rowIndex)}
+                              />
+                            </td>
+                        );
+                      } else {
+                        return (
+                          cellIndex === 0
+                            ? <div className='title'
+                              style={{
+                                gridRow: '1',
+                                gridColumn: `span ${header.length} / span ${header.length}`
+                              }}>{cell}</div>
+                            : <td style={{
+                              gridRow: '2',
+                              backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
+                            }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
+                              <input
+                                style={{
+                                  backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
+                                }}
+                                type="text"
+                                value={editedData[rowIndex][cellIndex]}
+                              />
+                              <button className='button-edit-field'>
+                                <AiFillEdit />
+                              </button>
+                            </td>
+                        );
+                      }
                     })
                   }
                 </tr>

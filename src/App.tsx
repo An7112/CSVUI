@@ -133,6 +133,11 @@ function App() {
     );
   };
 
+  const handleRestoreAllColumns = () => {
+    setSelectedColumns(header);
+  };
+
+
   const handleExpottCSV = () => {
     const filteredData = editedData.map((row) =>
       row.map((value: any, index: number) =>
@@ -173,6 +178,7 @@ function App() {
             <input className='open-file' id='select-file' type="file" accept=".csv" onChange={handleFileUpload} />
           </div>
           <button className='button' onClick={handleExpottCSV}>Export CSV</button>
+          <button className='button' onClick={handleRestoreAllColumns}>Restore all columns </button>
         </div>
         {Array.isArray(selectedColumns) && selectedColumns.length > 0 &&
           <div className='frame-header-row' style={{ gridTemplateColumns: `repeat(${selectedColumns.length}, minmax(0, 1fr))` }}>

@@ -15,19 +15,13 @@ function App() {
   const [modalCellIndex, setModalCellIndex] = useState<number>(0);
   const [modalInputValue, setModalInputValue] = useState<string>('');
   const [hiddenRows, setHiddenRows] = useState<boolean[]>([]);
-
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
   useEffect(() => {
     if (Array.isArray(header) && header.length > 0) {
       setSelectedColumns(header);
     }
   }, [header]);
-
-  useEffect(() => {
-    if (editedData.length) {
-      setHiddenRows(Array(editedData.length - 1).fill(false));
-    }
-  }, [editedData]);
 
   const handleHideToggle = (rowIndex: number) => {
     const updatedHiddenRows = [...hiddenRows];
@@ -223,12 +217,11 @@ function App() {
             {Array.isArray(editedData) && editedData.length > 1
               &&
               editedData.map((row: any[], rowIndex: any) => {
-                const isRowHidden = hiddenRows[rowIndex];
                 return (
-                  <tr key={rowIndex} className='item-content-row'
+                  <tr key={rowIndex}   className={`item-content-row ${hiddenRows[rowIndex] ? 'hidden-row' : ''}`}
                     style={{
                       gridTemplateColumns: `repeat(${header.length}, minmax(0, 1fr))`,
-                      gridTemplateRows: `repeat(2, 1fr)`,
+                      gridTemplateRows: hiddenRows[rowIndex] ? '' : `repeat(2, 1fr)`,
                       gap: '1rem',
                     }}>
                     {
@@ -240,8 +233,8 @@ function App() {
                                 style={{
                                   gridRow: '1',
                                   gridColumn: `span ${header.length} / span ${header.length}`
-                                }}>{cell}</div>
-                              : <td style={{ gridRow: '2' }} key={`${rowIndex}-${cellIndex}`} className='item-content input'>
+                                }} onClick={() => handleHideToggle(rowIndex)}>{cell}</div>
+                              : <td style={{ gridRow: '2', display: hiddenRows[rowIndex] ? 'none' : '' }} key={`${rowIndex}-${cellIndex}`} className='item-content input' >
                                 <input
                                   type="checkbox" checked={switchState[rowIndex]} onChange={() => handleSwitchChange(rowIndex)}
                                 />
@@ -258,7 +251,7 @@ function App() {
                               : <td style={{
                                 gridRow: '2',
                                 backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
-                                display: isRowHidden ? 'none' : ''
+                                display: hiddenRows[rowIndex] ? 'none' : ''
                               }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
                                 <input
                                   style={{

@@ -81,6 +81,7 @@ label{
   padding: 0 0.5rem;
   align-items: center;
   border-radius: 2px;
+  height: 40px;
   cursor: pointer;
 }
 

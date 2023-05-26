@@ -16,6 +16,7 @@ function App() {
   const [modalInputValue, setModalInputValue] = useState<string>('');
   const [hiddenRows, setHiddenRows] = useState<boolean[]>([]);
 
+  const keySelectOption = ['string', 'boolean', 'number', 'comment', 'literal', 'escape_string']
   useEffect(() => {
     if (Array.isArray(header) && header.length > 0) {
       setSelectedColumns(header);
@@ -212,7 +213,7 @@ function App() {
               &&
               editedData.map((row: any[], rowIndex: any) => {
                 return (
-                  <tr key={rowIndex}   className={`item-content-row ${hiddenRows[rowIndex] ? 'hidden-row' : ''}`}
+                  <tr key={rowIndex} className={`item-content-row ${hiddenRows[rowIndex] ? 'hidden-row' : ''}`}
                     style={{
                       gridTemplateColumns: `repeat(${header.length}, minmax(0, 1fr))`,
                       gridTemplateRows: hiddenRows[rowIndex] ? '' : `repeat(2, 1fr)`,
@@ -232,17 +233,36 @@ function App() {
                               backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
                               display: hiddenRows[rowIndex] ? 'none' : ''
                             }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
-                              <input
-                                style={{
-                                  backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
-                                }}
-                                type="text"
-                                value={editedData[rowIndex][cellIndex]}
-                                onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
-                              />
-                              <button className='button-edit-field' onClick={() => handleModalOpen(rowIndex, cellIndex)}>
-                                <AiFillEdit />
-                              </button>
+                              {keySelectOption.includes(cell)
+                                ? <select
+                                  className='select-key'
+                                  style={{
+                                    backgroundColor: rowIndex % 2 === 0 ? "#161616" : "#363535",
+                                  }}
+                                  value={editedData[rowIndex][cellIndex]}
+                                  onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
+                                >
+                                  {keySelectOption.map((option: string) => (
+                                    <option className='option-keys' key={option} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                                :
+                                <>
+                                  <input
+                                    style={{
+                                      backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
+                                    }}
+                                    type="text"
+                                    value={editedData[rowIndex][cellIndex]}
+                                    onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
+                                  />
+                                  <button className='button-edit-field' onClick={() => handleModalOpen(rowIndex, cellIndex)}>
+                                    <AiFillEdit />
+                                  </button>
+                                </>
+                              }
                             </td>
                         );
                       })

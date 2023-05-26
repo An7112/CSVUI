@@ -85,6 +85,12 @@ label{
   cursor: pointer;
 }
 
+.select-key{
+  color: white;
+  border: none;
+  width: 100%;
+}
+
 .frame-input-file input[type=file]::file-selector-button {
   margin-right: 20px;
   border: none;

@@ -14,6 +14,8 @@ function App() {
   const [modalRowIndex, setModalRowIndex] = useState<number>(0);
   const [modalCellIndex, setModalCellIndex] = useState<number>(0);
   const [modalInputValue, setModalInputValue] = useState<string>('');
+  const [hiddenRows, setHiddenRows] = useState<boolean[]>([]);
+
 
   useEffect(() => {
     if (Array.isArray(header) && header.length > 0) {
@@ -21,6 +23,17 @@ function App() {
     }
   }, [header]);
 
+  useEffect(() => {
+    if (editedData.length) {
+      setHiddenRows(Array(editedData.length - 1).fill(false));
+    }
+  }, [editedData]);
+
+  const handleHideToggle = (rowIndex: number) => {
+    const updatedHiddenRows = [...hiddenRows];
+    updatedHiddenRows[rowIndex] = !updatedHiddenRows[rowIndex];
+    setHiddenRows(updatedHiddenRows);
+  };
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files[0]) {
@@ -209,59 +222,63 @@ function App() {
           <tbody className='tbody'>
             {Array.isArray(editedData) && editedData.length > 1
               &&
-              editedData.map((row: any[], rowIndex: any) => (
-                <tr key={rowIndex} className='item-content-row'
-                  style={{
-                    gridTemplateColumns: `repeat(${header.length}, minmax(0, 1fr))`,
-                    gridTemplateRows: `repeat(2, 1fr)`,
-                    gap: '1rem'
-                  }}>
-                  {
-                    row.map((cell: any, cellIndex: any) => {
-                      if (cellIndex === row.length - 1 && row.includes('comment')) {
-                        return (
-                          cellIndex === 0
-                            ? <div className='title'
-                              style={{
-                                gridRow: '1',
-                                gridColumn: `span ${header.length} / span ${header.length}`
-                              }}>{cell}</div>
-                            : <td style={{ gridRow: '2' }} key={`${rowIndex}-${cellIndex}`} className='item-content input'>
-                              <input
-                                type="checkbox" checked={switchState[rowIndex]} onChange={() => handleSwitchChange(rowIndex)}
-                              />
-                            </td>
-                        );
-                      } else {
-                        return (
-                          cellIndex === 0
-                            ? <div className='title'
-                              style={{
-                                gridRow: '1',
-                                gridColumn: `span ${header.length} / span ${header.length}`
-                              }}>{cell}</div>
-                            : <td style={{
-                              gridRow: '2',
-                              backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
-                            }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
-                              <input
+              editedData.map((row: any[], rowIndex: any) => {
+                const isRowHidden = hiddenRows[rowIndex];
+                return (
+                  <tr key={rowIndex} className='item-content-row'
+                    style={{
+                      gridTemplateColumns: `repeat(${header.length}, minmax(0, 1fr))`,
+                      gridTemplateRows: `repeat(2, 1fr)`,
+                      gap: '1rem',
+                    }}>
+                    {
+                      row.map((cell: any, cellIndex: any) => {
+                        if (cellIndex === row.length - 1 && row.includes('comment')) {
+                          return (
+                            cellIndex === 0
+                              ? <div className='title'
                                 style={{
-                                  backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
-                                }}
-                                type="text"
-                                value={editedData[rowIndex][cellIndex]}
-                                onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
-                              />
-                              <button className='button-edit-field' onClick={() => handleModalOpen(rowIndex, cellIndex)}>
-                                <AiFillEdit />
-                              </button>
-                            </td>
-                        );
-                      }
-                    })
-                  }
-                </tr>
-              ))
+                                  gridRow: '1',
+                                  gridColumn: `span ${header.length} / span ${header.length}`
+                                }}>{cell}</div>
+                              : <td style={{ gridRow: '2' }} key={`${rowIndex}-${cellIndex}`} className='item-content input'>
+                                <input
+                                  type="checkbox" checked={switchState[rowIndex]} onChange={() => handleSwitchChange(rowIndex)}
+                                />
+                              </td>
+                          );
+                        } else {
+                          return (
+                            cellIndex === 0
+                              ? <div className='title'
+                                style={{
+                                  gridRow: '1',
+                                  gridColumn: `span ${header.length} / span ${header.length}`
+                                }} onClick={() => handleHideToggle(rowIndex)}>{cell}</div>
+                              : <td style={{
+                                gridRow: '2',
+                                backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
+                                display: isRowHidden ? 'none' : ''
+                              }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
+                                <input
+                                  style={{
+                                    backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
+                                  }}
+                                  type="text"
+                                  value={editedData[rowIndex][cellIndex]}
+                                  onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
+                                />
+                                <button className='button-edit-field' onClick={() => handleModalOpen(rowIndex, cellIndex)}>
+                                  <AiFillEdit />
+                                </button>
+                              </td>
+                          );
+                        }
+                      })
+                    }
+                  </tr>
+                )
+              })
             }
           </tbody>
         </table>

@@ -1,24 +1,114 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import Papa from 'papaparse';
 import './App.css';
+import { AiFillEdit } from 'react-icons/ai'
 
 function App() {
+  const [csvData, setCsvData] = useState<any[]>([]);
+  const [header, setHeader] = useState<string[]>([]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files[0]) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const csvText = reader.result as string;
+        Papa.parse(csvText, {
+          complete: (results) => {
+            setHeader(results.data[0] as string[]);
+            setCsvData(
+              results.data
+            );
+          },
+        });
+      };
+      reader.readAsText(file);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <div className="main">
+        <div className='header-action'>
+          <div className='frame-input-file'>
+            <input className='open-file' id='select-file' type="file" accept=".csv" onChange={handleFileUpload} />
+          </div>
+        </div>
+        {Array.isArray(header) && header.length > 0 &&
+          <div className='frame-header-row' style={{ gridTemplateColumns: `repeat(${header.length + 1}, minmax(0, 1fr))` }}>
+            {header.map((cell: any, cellIndex: any) => (
+              <div className='item-header-row' key={cellIndex}>
+                <button className='button'>
+                  {cell.charAt(0).toUpperCase() + cell.slice(1)}
+                </button>
+              </div>
+            ))}
+            <div className='item-header-row'>
+              Add comment
+            </div>
+          </div>
+        }
+        {Array.isArray(header) && header.length > 0 &&
+          <div className='frame-header-row' style={{ gridTemplateColumns: `repeat(${header.length}, minmax(0, 1fr))` }}>
+            {header.slice(1).map((cell: any, cellIndex: any) => (
+              <div className='item-header-row' key={cellIndex}>
+                <button className='button'>
+                  {cell.charAt(0).toUpperCase() + cell.slice(1)}
+                </button>
+              </div>
+            ))}
+            <div className='item-header-row'>
+              Add comment
+            </div>
+          </div>
+        }
+        <table className='frame-table'>
+          <tbody className='tbody'>
+            {Array.isArray(csvData) && csvData.length > 1
+              &&
+              csvData.map((row: any[], rowIndex: any) => (
+                <tr key={rowIndex} className='item-content-row'
+                  style={{
+                    gridTemplateColumns: `repeat(${header.length}, minmax(0, 1fr))`,
+                    gridTemplateRows: `repeat(2, 1fr)`,
+                    gap: '1rem'
+                  }}>
+                  {Array.isArray(row) && row.length > 0
+                    &&
+                    row.map((cell: any, cellIndex: any) => {
+                      return (
+                        cellIndex === 0
+                          ? <div className='title'
+                            style={{
+                              gridRow: '1',
+                              gridColumn: `span ${header.length} / span ${header.length}`
+                            }}>{cell}</div>
+                          : <td style={{
+                            gridRow: '2',
+                            backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
+                          }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
+                            <input
+                              style={{
+                                backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
+                              }}
+                              type="text"
+                              value={''}
+
+                            />
+                            <button className='button-edit-field' >
+                              <AiFillEdit />
+                            </button>
+                          </td>
+                      );
+                    })
+                  }
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

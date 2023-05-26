@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import Papa from 'papaparse';
 import './App.css';
 import { AiFillEdit } from 'react-icons/ai'
+import { Modal } from 'antd';
 
 function App() {
   const [csvData, setCsvData] = useState<any[]>([]);
   const [header, setHeader] = useState<string[]>([]);
   const [editedData, setEditedData] = useState<any[]>([]);
   const [switchState, setSwitchState] = useState<boolean[]>([]);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [modalRowIndex, setModalRowIndex] = useState<number>(0);
+  const [modalCellIndex, setModalCellIndex] = useState<number>(0);
+  const [modalInputValue, setModalInputValue] = useState<string>('');
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -74,7 +79,25 @@ function App() {
     updatedData[rowIndex][cellIndex] = newValue;
     setEditedData(updatedData);
   };
-  
+
+  const handleModalOpen = (rowIndex: number, cellIndex: number) => {
+    const cellValue = editedData[rowIndex][cellIndex];
+    setModalInputValue(cellValue);
+    setModalRowIndex(rowIndex);
+    setModalCellIndex(cellIndex);
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+
+  const handleModalSave = (newValue: string) => {
+    const updatedData = [...editedData];
+    updatedData[modalRowIndex][modalCellIndex] = newValue;
+    setEditedData(updatedData);
+    setModalVisible(false);
+  };
   return (
     <div className="container">
       <div className="main">
@@ -158,7 +181,7 @@ function App() {
                                 value={editedData[rowIndex][cellIndex]}
                                 onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
                               />
-                              <button className='button-edit-field'>
+                              <button className='button-edit-field' onClick={() => handleModalOpen(rowIndex, cellIndex)}>
                                 <AiFillEdit />
                               </button>
                             </td>
@@ -172,6 +195,22 @@ function App() {
           </tbody>
         </table>
       </div>
+      <Modal
+        visible={modalVisible}
+        onCancel={handleModalClose}
+        onOk={() => handleModalSave(modalInputValue)}
+        className='edit-modal'
+      >
+        <label>
+          Edit data
+        </label>
+        <textarea
+          key='textarea-field'
+          value={modalInputValue}
+          onChange={(event) => setModalInputValue(event.target.value)}
+          rows={20}
+        />
+      </Modal>
     </div>
   );
 }

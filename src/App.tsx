@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import './App.css';
 import { AiFillEdit } from 'react-icons/ai'
@@ -10,9 +10,16 @@ function App() {
   const [editedData, setEditedData] = useState<any[]>([]);
   const [switchState, setSwitchState] = useState<boolean[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [modalRowIndex, setModalRowIndex] = useState<number>(0);
   const [modalCellIndex, setModalCellIndex] = useState<number>(0);
   const [modalInputValue, setModalInputValue] = useState<string>('');
+
+  useEffect(() => {
+    if (Array.isArray(header) && header.length > 0) {
+      setSelectedColumns(header);
+    }
+  }, [header]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -120,6 +127,12 @@ function App() {
     }
   };
 
+  const handleRemoveColumn = (columnName: string) => {
+    setSelectedColumns((prevSelectedColumns) =>
+      prevSelectedColumns.filter((column) => column !== columnName)
+    );
+  };
+
   return (
     <div className="container">
       <div className="main">
@@ -128,18 +141,15 @@ function App() {
             <input className='open-file' id='select-file' type="file" accept=".csv" onChange={handleFileUpload} />
           </div>
         </div>
-        {Array.isArray(header) && header.length > 0 &&
-          <div className='frame-header-row' style={{ gridTemplateColumns: `repeat(${header.length + 1}, minmax(0, 1fr))` }}>
-            {header.map((cell: any, cellIndex: any) => (
+        {Array.isArray(selectedColumns) && selectedColumns.length > 0 &&
+          <div className='frame-header-row' style={{ gridTemplateColumns: `repeat(${selectedColumns.length}, minmax(0, 1fr))` }}>
+            {selectedColumns.map((cell: any, cellIndex: any) => (
               <div className='item-header-row' key={cellIndex}>
-                <button className='button'>
+                <button className='button' onClick={() => handleRemoveColumn(cell)}>
                   {cell.charAt(0).toUpperCase() + cell.slice(1)}
                 </button>
               </div>
             ))}
-            <div className='item-header-row'>
-              Add comment
-            </div>
           </div>
         }
         {Array.isArray(header) && header.length > 0 &&

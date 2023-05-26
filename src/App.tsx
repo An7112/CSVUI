@@ -64,6 +64,17 @@ function App() {
     }
   };
 
+
+  const handleCellEdit = (
+    newValue: string,
+    rowIndex: number,
+    cellIndex: number
+  ) => {
+    const updatedData = [...editedData];
+    updatedData[rowIndex][cellIndex] = newValue;
+    setEditedData(updatedData);
+  };
+  
   return (
     <div className="container">
       <div className="main">
@@ -145,6 +156,7 @@ function App() {
                                 }}
                                 type="text"
                                 value={editedData[rowIndex][cellIndex]}
+                                onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
                               />
                               <button className='button-edit-field'>
                                 <AiFillEdit />

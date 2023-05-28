@@ -41,7 +41,6 @@ function App() {
               { length: results.data.length - 1 },
               () => false
             );
-            setHeader(results.data[0] as string[]);
             setCsvData(
               results.data.slice(1).map((row: any, rowIndex: number) => {
                 if (row.includes("comment")) {
@@ -51,6 +50,7 @@ function App() {
                 }
               })
             );
+            setHeader(results.data[0] as string[]);
             setEditedData(results.data.slice(1));
             setSwitchState(switchStateArray);
           },
@@ -140,7 +140,7 @@ function App() {
   };
 
 
-  const handleExpottCSV = () => {
+  const handleExportCSV = () => {
     const filteredData = editedData.map((row) =>
       row.map((value: any, index: number) =>
         selectedColumns.includes(header[index]) && value !== "" ? value : null
@@ -172,6 +172,57 @@ function App() {
     }
   };
 
+  const handleExportYAML = () => {
+    const yamlText: string[] = [];
+    yamlText.push("# THIS IS AN AUTO GENERATED FILE. Do not modify it directly.");
+    editedData.forEach((column) => {
+      const columnValues: { [key: string]: string } = {};
+  
+      column.forEach((value: string, index: number) => {
+        const columnName = header[index];
+        columnValues[columnName] = value;
+      });
+  
+      const { key, common, develop, staging, devRemote } = columnValues;
+  
+      if (key && key.startsWith("#")) {
+        const comments = key.split('\n');
+        comments.forEach((comment: string) => {
+          yamlText.push(comment);
+        });
+      } else if (key && (key.startsWith('app.') || key.startsWith('platform.'))) {
+        const value = formatValue(common) || formatValue(develop) || formatValue(staging) || formatValue(devRemote);
+        if (value) {
+          yamlText.push(`${key}: ${value}`);
+        }
+      } else {
+        const value = common || develop || staging || devRemote;
+        if (value) {
+          yamlText.push(`${key}: ${value}`);
+        }
+      }
+    });
+  
+    const yamlContent = yamlText.join('\n');
+    const yamlBlob = new Blob([yamlContent], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(yamlBlob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'edited.yaml');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+  
+  const formatValue = (value: string | undefined): string | undefined => {
+    if (value && value.includes('\n')) {
+      return value;
+    }
+    return value ? value.trim() : undefined;
+  };  
   return (
     <div className="container">
       <div className="main">
@@ -179,7 +230,11 @@ function App() {
           <div className='frame-input-file'>
             <input className='open-file' id='select-file' type="file" accept=".csv" onChange={handleFileUpload} />
           </div>
-          <button className='button' onClick={handleExpottCSV}>Export CSV</button>
+          <button className="button" onClick={handleExportYAML}>
+            Export YAML
+          </button>
+
+          <button className='button' onClick={handleExportCSV}>Export CSV</button>
           <button className='button' onClick={handleRestoreAllColumns}>Restore all columns </button>
         </div>
         {Array.isArray(selectedColumns) && selectedColumns.length > 0 &&
@@ -221,6 +276,7 @@ function App() {
                     }}>
                     {
                       row.map((cell: any, cellIndex: any) => {
+                        const keyIndex = header.indexOf('key') - 1;
                         return (
                           cellIndex === 0
                             ? <div className='title'
@@ -233,7 +289,7 @@ function App() {
                               backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535',
                               display: hiddenRows[rowIndex] ? 'none' : ''
                             }} key={`${rowIndex}-${cellIndex}`} className='item-content'>
-                              {keySelectOption.includes(cell)
+                              {keyIndex === cellIndex
                                 ? <select
                                   className='select-key'
                                   style={{

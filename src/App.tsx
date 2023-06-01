@@ -4,13 +4,18 @@ import './App.css';
 import { AiFillEdit } from 'react-icons/ai'
 import { Modal } from 'antd';
 
+type SelectColumn = {
+  key: string,
+  value: string
+}
+
 function App() {
   const [csvData, setCsvData] = useState<any[]>([]);
   const [header, setHeader] = useState<string[]>([]);
   const [editedData, setEditedData] = useState<any[]>([]);
   const [switchState, setSwitchState] = useState<boolean[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [selectedColumns, setSelectedColumns] = useState<SelectColumn[]>([]);
   const [modalRowIndex, setModalRowIndex] = useState<number>(0);
   const [modalCellIndex, setModalCellIndex] = useState<number>(0);
   const [modalInputValue, setModalInputValue] = useState<string>('');
@@ -19,7 +24,11 @@ function App() {
   const keySelectOption = ['string', 'boolean', 'number', 'comment', 'literal', 'escape_string']
   useEffect(() => {
     if (Array.isArray(header) && header.length > 0) {
-      setSelectedColumns(header);
+      const result = header.map((key) => ({
+        key: key,
+        value: 'enable'
+      }))
+      setSelectedColumns(result);
     }
   }, [header]);
 
@@ -129,21 +138,37 @@ function App() {
     }
   };
 
-  const handleRemoveColumn = (columnName: string) => {
+  const handleUpdateSelectColumn = (columnName: string) => {
     setSelectedColumns((prevSelectedColumns) =>
-      prevSelectedColumns.filter((column) => column !== columnName)
-    );
+      prevSelectedColumns.map((item) => {
+        if (item.key === columnName) {
+          if (item.value === 'enable') {
+            return { ...item, value: 'disable' }
+          }
+          if (item.value === 'disable') {
+            return { ...item, value: 'enable' }
+          }
+        }
+        return item
+      })
+    )
   };
 
   const handleRestoreAllColumns = () => {
-    setSelectedColumns(header);
+    const result = header.map((key) => ({
+      key: key,
+      value: 'enable'
+    }))
+    setSelectedColumns(result);
   };
 
 
   const handleExportCSV = () => {
     const filteredData = editedData.map((row) =>
-      row.map((value: any, index: number) =>
-        selectedColumns.includes(header[index]) && value !== "" ? value : null
+      row.map((value: any, index: number) => {
+        const result = selectedColumns[index].value === 'enable' && value !== "" ? value : null
+        return result;
+      }
       )
     );
 
@@ -177,14 +202,14 @@ function App() {
     yamlText.push("# THIS IS AN AUTO GENERATED FILE. Do not modify it directly.");
     editedData.forEach((column) => {
       const columnValues: { [key: string]: string } = {};
-  
+
       column.forEach((value: string, index: number) => {
         const columnName = header[index];
         columnValues[columnName] = value;
       });
-  
+
       const { key, common, develop, staging, devRemote } = columnValues;
-  
+
       if (key && key.startsWith("#")) {
         const comments = key.split('\n');
         comments.forEach((comment: string) => {
@@ -202,7 +227,7 @@ function App() {
         }
       }
     });
-  
+
     const yamlContent = yamlText.join('\n');
     const yamlBlob = new Blob([yamlContent], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
@@ -216,13 +241,14 @@ function App() {
       document.body.removeChild(link);
     }
   };
-  
+
   const formatValue = (value: string | undefined): string | undefined => {
     if (value && value.includes('\n')) {
       return value;
     }
     return value ? value.trim() : undefined;
-  };  
+  };
+
   return (
     <div className="container">
       <div className="main">
@@ -237,12 +263,12 @@ function App() {
           <button className='button' onClick={handleExportCSV}>Export CSV</button>
           <button className='button' onClick={handleRestoreAllColumns}>Restore all columns </button>
         </div>
-        {Array.isArray(selectedColumns) && selectedColumns.length > 0 &&
-          <div className='frame-header-row' style={{ gridTemplateColumns: `repeat(${selectedColumns.length}, minmax(0, 1fr))` }}>
-            {selectedColumns.map((cell: any, cellIndex: any) => (
-              <div className='item-header-row' key={cellIndex}>
-                <button className='button' onClick={() => handleRemoveColumn(cell)}>
-                  {cell.charAt(0).toUpperCase() + cell.slice(1)}
+        {Array.isArray(header) &&
+          <div className='frame-header-row header-select' style={{ gridTemplateColumns: `repeat(${selectedColumns.length}, minmax(0, 1fr))` }}>
+            {selectedColumns.map((cell: SelectColumn, cellIndex: any) => (
+              <div className={cell.value === 'disable' ? 'item-header-row disable' : 'item-header-row'} key={cellIndex}>
+                <button className='button' onClick={() => handleUpdateSelectColumn(cell.key)}>
+                  {cell.key.charAt(0).toUpperCase() + cell.key.slice(1)}
                 </button>
               </div>
             ))}

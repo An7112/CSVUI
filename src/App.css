@@ -147,6 +147,16 @@ label{
   border-bottom: 1px solid #93D2DC;
   padding: 1rem 0;
 }
+
+.frame-header-row.header-select .item-header-row.disable{
+  background-color: #080b0c;
+}
+
+.item-header-row.disable button{
+  background-color: #172124;
+  color: #000000;
+}
+
 .item-header-row{
   background-color: #324B4F;
   padding: 0.5rem;

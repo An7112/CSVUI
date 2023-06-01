@@ -1,0 +1,221 @@
+.paginated-main {
+    width: 100%;
+    position: relative;
+    border: 1px solid var(--bg-contrast);
+    margin-top: var(--spacing-sm);
+    box-sizing: border-box;
+    border-radius: 6px;
+    background-color: black;
+}
+
+.paginated-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: var(--bg-main);
+    border-radius: 0;
+}
+
+.paginated-row.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    overflow-y: auto;
+}
+
+.paginated-row.paginated-header {
+    padding: var(--spacing-sm) 0;
+    position: sticky;
+    display: grid;
+    border-bottom: 1px solid var(--bg-contrast);
+    top: 0;
+    background-color: var(--bg-main);
+    z-index: 1;
+}
+
+.paginated-row.grid-container::-webkit-scrollbar {
+    display: block;
+    width: 5px;
+}
+
+.paginated-row.grid-container::-webkit-scrollbar-thumb {
+    background: var(--bg-contrast);
+}
+
+.paginated-item {
+    width: 100%;
+    padding: 0 var(--spacing-xs);
+    transition: ease-in-out 0.2s;
+    gap: var(--spacing-xs);
+    display: grid;
+    grid-template-columns: repeat(18, minmax(0, 1fr));
+}
+
+.paginated-item .item-paginated-key {
+    grid-column: span 1 / span 1;
+    color: var(--text-color);
+}
+
+.item-paginated-key span{
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.paginated-item.paginated-header {
+    color: var(--text-blur);
+    font-size: 14px;
+}
+
+.paginated-item.items:hover {
+    background-color: var(--bg-contrast);
+    cursor: pointer;
+}
+
+.paginated-item.items {
+    padding: var(--spacing-xs);
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    background-color: var(--bg-contrast);
+}
+.item-name {
+    color: var(--text-color);
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-column: span 8 / span 8;
+    font-size: 15px;
+}
+
+.item-name-store {
+    grid-column: span 5 / span 5;
+    display: block;
+    margin: auto;
+    margin-left: var(--spacing-sm);
+    overflow: hidden;
+    width: 90%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+.item-name .img-avatar {
+    grid-column: span 1 / span 1;
+    border-radius: 4px;
+}
+
+.item-3 {
+    grid-column: span 5 / span 5;
+    display: block;
+    margin: auto;
+    margin-left: var(--spacing-sm);
+    overflow: hidden;
+    width: 90%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 15px;
+    color: var(--text-color);
+}
+
+.class-pagination-action {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xs);
+    justify-content: flex-end;
+}
+
+.class-pagination-action .page-item .page-link {
+    display: flex;
+    align-items: center;
+    width: 34px;
+    height: 34px;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.class-pagination-action .page-item.active .page-link {
+    background-color: var(--main-major);
+    color: var(--text-color);
+}
+
+.class-pagination-action .page-item .page-link:hover {
+    background-color: var(--main-major);
+    color: var(--text-color);
+}
+.jump-page {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xs);
+}
+
+.jump-page .form-control {
+    width: 34px;
+    border: none;
+    background-color: var(--text-blur);
+    border-radius: 4px;
+    height: 34px;
+}
+
+.jump-page .btn-primary {
+    width: 34px;
+    border: none;
+    background-color: var(--text-blur);
+    border-radius: 4px;
+    height: 34px;
+}
+
+.class-img {
+    height: 70px;
+    border-radius: 6px;
+    overflow: hidden;
+    grid-column: span 1 / span 1;
+    position: relative;
+}
+
+.class-img .span-frame {
+    box-sizing: border-box;
+    display: block;
+    overflow: hidden;
+    width: initial;
+    height: initial;
+    background: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.class-img .span-frame .img-avatar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    margin: auto;
+    padding: 0;
+    border: none;
+    display: block;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 768px) {
+    .paginated-main {
+        grid-template-columns: 1fr;
+    }
+}

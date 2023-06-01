@@ -27,11 +27,19 @@ span {
 }
 
 :root {
-  --main-major: #0052CC;
-  --text-color: black;
+  --main-major: #55B9A9;
+  --bg-contrast: #2a2d3e;
+  --bg-main: #1a1c29;
+  --main-bg: white;
+  --text-color: white;
+  --text-blur: #a9aaac;
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 2rem;
+  --spacing-4: 8px;
+  --spacing-22: 44px;
+  --rounded-sm: 6px;
+  --fs-2lg: 18px;
   --fs-lg: 16px;
   --fs-2xl: 20px;
   --fs-4xl: 24px;

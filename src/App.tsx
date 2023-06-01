@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Papa from 'papaparse';
 import './App.css';
 import { AiFillEdit } from 'react-icons/ai'
 import { Modal } from 'antd';
+import Pagination from './component/pagination';
 
 type SelectColumn = {
   key: string,
@@ -20,6 +21,10 @@ function App() {
   const [modalCellIndex, setModalCellIndex] = useState<number>(0);
   const [modalInputValue, setModalInputValue] = useState<string>('');
   const [hiddenRows, setHiddenRows] = useState<boolean[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, _] = useState(22);
+
+  const offset = currentPage * itemsPerPage;
 
   const keySelectOption = ['string', 'boolean', 'number', 'comment', 'literal', 'escape_string']
   useEffect(() => {
@@ -73,7 +78,7 @@ function App() {
     const updatedSwitchState = [...switchState];
     updatedSwitchState[rowIndex] = !updatedSwitchState[rowIndex];
     setSwitchState(updatedSwitchState);
-
+  
     const updatedEditedData = [...editedData];
     const commentIndex = updatedEditedData[rowIndex].findIndex((cell: any) => cell.includes("comment")) + 1;
     if (commentIndex !== -1) {
@@ -86,26 +91,29 @@ function App() {
       setEditedData(updatedEditedData);
     }
   };
+  
 
+const handleCellEdit = (
+  newValue: string,
+  rowIndex: number,
+  cellIndex: number
+) => {
+  const updatedData = [...editedData];
+  const actualRowIndex = offset + rowIndex;
+  updatedData[actualRowIndex][cellIndex] = newValue;
+  setEditedData(updatedData);
+};
 
-  const handleCellEdit = (
-    newValue: string,
-    rowIndex: number,
-    cellIndex: number
-  ) => {
-    const updatedData = [...editedData];
-    updatedData[rowIndex][cellIndex] = newValue;
-    setEditedData(updatedData);
-  };
 
   const handleModalOpen = (rowIndex: number, cellIndex: number) => {
-    const cellValue = editedData[rowIndex][cellIndex];
+    const actualRowIndex = offset + rowIndex;
+    const cellValue = editedData[actualRowIndex][cellIndex];
     setModalInputValue(cellValue);
-    setModalRowIndex(rowIndex);
+    setModalRowIndex(actualRowIndex);
     setModalCellIndex(cellIndex);
     setModalVisible(true);
   };
-
+  
   const handleModalClose = () => {
     setModalVisible(false);
   };
@@ -249,6 +257,19 @@ function App() {
     return value ? value.trim() : undefined;
   };
 
+
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
+  };
+
+  const pagedItems = useMemo(() => {
+    const startIndex = offset;
+    const endIndex = offset + itemsPerPage;
+    return editedData.slice(startIndex, endIndex);
+  }, [offset, itemsPerPage, editedData]);
+
+  console.log(pagedItems)
+
   return (
     <div className="container">
       <div className="main">
@@ -262,6 +283,11 @@ function App() {
 
           <button className='button' onClick={handleExportCSV}>Export CSV</button>
           <button className='button' onClick={handleRestoreAllColumns}>Restore all columns </button>
+          <Pagination
+              pageCount={Math.ceil(editedData.length / itemsPerPage)}
+              onPageChange={handlePageChange}
+              initialPage={currentPage}
+            />
         </div>
         {Array.isArray(header) &&
           <div className='frame-header-row header-select' style={{ gridTemplateColumns: `repeat(${selectedColumns.length}, minmax(0, 1fr))` }}>
@@ -290,9 +316,9 @@ function App() {
         }
         <table className='frame-table'>
           <tbody className='tbody'>
-            {Array.isArray(editedData) && editedData.length > 1
+            {Array.isArray(pagedItems) && pagedItems.length > 1
               &&
-              editedData.map((row: any[], rowIndex: any) => {
+              pagedItems.map((row: any[], rowIndex: any) => {
                 return (
                   <tr key={rowIndex} className={`item-content-row ${hiddenRows[rowIndex] ? 'hidden-row' : ''}`}
                     style={{
@@ -321,7 +347,7 @@ function App() {
                                   style={{
                                     backgroundColor: rowIndex % 2 === 0 ? "#161616" : "#363535",
                                   }}
-                                  value={editedData[rowIndex][cellIndex]}
+                                  value={pagedItems[rowIndex][cellIndex]}
                                   onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
                                 >
                                   {keySelectOption.map((option: string) => (
@@ -337,7 +363,7 @@ function App() {
                                       backgroundColor: rowIndex % 2 === 0 ? '#161616' : '#363535'
                                     }}
                                     type="text"
-                                    value={editedData[rowIndex][cellIndex]}
+                                    value={pagedItems[rowIndex][cellIndex]}
                                     onChange={(event) => handleCellEdit(event.target.value, rowIndex, cellIndex)}
                                   />
                                   <button className='button-edit-field' onClick={() => handleModalOpen(rowIndex, cellIndex)}>
